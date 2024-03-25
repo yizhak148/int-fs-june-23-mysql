@@ -1,0 +1,8 @@
+CREATE SCHEMA IF NOT EXISTS school;
+
+CREATE TABLE IF NOT EXISTS school.students (
+	id VARCHAR(36) PRIMARY KEY,
+    firstName VARCHAR(100) NOT NULL,
+    lastName VARCHAR(100) NOT NULL,
+    email VARCHAR(500) NOT NULL
+);

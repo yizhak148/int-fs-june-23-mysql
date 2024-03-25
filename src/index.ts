@@ -1,9 +1,36 @@
 import "dotenv/config";
 
-import { createConnection } from "mysql2/promise";
+import { Connection, createConnection } from "mysql2/promise";
+import express from "express";
 
-async function app() {
-    const connection = await createConnection({
+let dbConnection: Connection;
+const app = express();
+
+// CRUD - Create Read Update Delete
+
+app.get("/students", async (req, res) => {
+    try {
+        const [students] = await dbConnection.query("SELECT id, first_name, lastName, email FROM students");
+
+        res.status(200);
+        res.json(students);
+    } catch (err) {
+        console.error(err);
+        res.status(500);
+        res.json({ error: "something went wrong" });
+    }
+});
+
+app.get("/students/:id", async (req, res) => { });
+
+app.post("/students", async (req, res) => { });
+
+app.put("/students/:id", async (req, res) => { });
+
+app.delete("/students/:id", async (req, res) => { });
+
+async function runApp() {
+    dbConnection = await createConnection({
         host: "localhost",
         user: "root",
         password: process.env.DB_PASSWORD,
@@ -11,14 +38,14 @@ async function app() {
     });
 
     try {
-        const [rows] = await connection.query("SELECT * FROM students");
-
-        console.log(rows);
+        app.listen(3000, () => console.log("app is running on localhost:3000"));
     } catch (err) {
-        console.error(err);
-    } finally {
-        connection.end();
+        dbConnection.end();
+        throw err;
     }
 }
 
-app();
+process.on("uncaughtException", () => dbConnection.end());
+process.on("unhandledRejection", () => dbConnection.end());
+
+runApp();

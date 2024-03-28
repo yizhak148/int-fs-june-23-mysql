@@ -1,11 +1,14 @@
 import "dotenv/config";
-import "body-parser";
-
 import { Connection, createConnection } from "mysql2/promise";
 import express from "express";
+import { json } from "body-parser";
+import cors from "cors";
 
 let dbConnection: Connection;
 const app = express();
+
+app.use(cors());
+app.use(json());
 
 // CRUD - Create Read Update Delete
 

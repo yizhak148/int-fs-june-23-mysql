@@ -8,11 +8,21 @@ let dbConnection: Connection;
 const app = express();
 
 // CRUD - Create Read Update Delete
-console.log("hi");
 
+
+const studentPageSize = 2;// מעמד את הנתונים שמגיעים בעמודים מסודרים
 app.get("/students", async (req, res) => {
     try {
-        const [students] = await dbConnection.execute("SELECT id, firstname, lastName, email FROM students");
+        const requestedPage = Number(req.query.page);
+        const offset = isNaN(requestedPage) || !Number.isInteger(requestedPage) ?
+        0 :
+        (requestedPage -1) * studentPageSize;
+        const [students] = await dbConnection.query(
+            `SELECT id, firstname, lastName, email
+             FROM students
+             LIMIT ${studentPageSize} OFFSET ${offset}`
+            );
+        
 
         res.status(200);
         res.json(students);
@@ -23,7 +33,22 @@ app.get("/students", async (req, res) => {
     }
 });
 
-app.get("/students/:id", async (req, res) => { });
+app.get("/students/:id", async (req, res) => {
+    const studentId = req.params.id;
+
+    try {
+        await dbConnection.execute(
+            `SELECT id, firstname, lastName, email FROM students WHERE id = ?`,
+            [studentId]
+        );
+
+        res.status(200).json({ message: "Student not found" });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Something went wrong" });
+
+    }
+ });
 
 app.post("/students", async (req, res) => {
 

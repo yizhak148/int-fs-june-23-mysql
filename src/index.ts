@@ -13,6 +13,8 @@ const app = express();
 const studentPageSize = 2;// מעמד את הנתונים שמגיעים בעמודים מסודרים
 app.get("/students", async (req, res) => {
     try {
+        const search = req.query.search && String(req.query.search);// עושה חיפוש בעזרת הלייק בשאילתה
+
         const requestedPage = Number(req.query.page);
         const offset = isNaN(requestedPage) || !Number.isInteger(requestedPage) ?
         0 :
@@ -20,10 +22,11 @@ app.get("/students", async (req, res) => {
         const [students] = await dbConnection.query(
             `SELECT id, firstname, lastName, email
              FROM students
-             LIMIT ${studentPageSize} OFFSET ${offset}`
+             ${search ? "WHERE firstname LIKE ? OR lastName LIKE ? OR email LIKE ?" : ""}
+             LIMIT ${studentPageSize} OFFSET ${offset}`,
+             [`${search}%`, `${search}%`, `${search}%`]
             );
         
-
         res.status(200);
         res.json(students);
     } catch (err) {
@@ -51,7 +54,6 @@ app.get("/students/:id", async (req, res) => {
  });
 
 app.post("/students", async (req, res) => {
-
     try {
         const {studentId, firstName, lastName, email } = req.body;
 
